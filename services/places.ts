@@ -7,7 +7,7 @@ export const fetchNearbySalons = async (
   const radius = 5000; // meters
   const type = "beauty_salon";
   const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=${type}&key=${GOOGLE_API_KEY}`;
-//   console.log(`URL: ${url}`);
+//   logger.log(`URL: ${url}`);
 
   const response = await fetch(url);
   const data = await response.json();

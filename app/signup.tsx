@@ -1,16 +1,19 @@
+import { registerUser } from "@/actions/api";
+import { RegisterRequest, UserType } from "@/types";
+import logger from "@/utils/logger";
 import { Ionicons } from "@expo/vector-icons";
+import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    Alert,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-
-type UserType = "salon" | "customer" | null;
 
 export default function Signup() {
   const router = useRouter();
@@ -18,18 +21,80 @@ export default function Signup() {
   const [step, setStep] = useState<"signup" | "otp">("signup");
   const [userType, setUserType] = useState<UserType>(null);
 
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [name, setName] = useState("Bilal"); // Add name field
+
+  const [email, setEmail] = useState("bilal@gmail.com");
+  const [phone, setPhone] = useState("03001234567");
+  const [password, setPassword] = useState("123456");
+  const [confirmPassword, setConfirmPassword] = useState("123456");
   const [otp, setOtp] = useState("");
 
   const [securePassword, setSecurePassword] = useState(true);
   const [secureConfirmPassword, setSecureConfirmPassword] = useState(true);
 
+  // Registration mutation
+  const registerMutation = useMutation({
+    mutationFn: (data: RegisterRequest) => registerUser(data),
+    onSuccess: (data) => {
+      logger.log("Registration successful:", data);
+      // Move to OTP step on success
+      // setStep("otp");
+      router.push("/login")
+      
+    },
+    onError: (error: any) => {
+      logger.log("Registration error:", JSON.stringify(error, null, 2));
+      logger.log("Error response:", error?.response?.data);
+      
+      // Handle 422 validation errors with detailed messages
+      let errorMessage = "Registration failed. Please try again.";
+      
+      if (error?.response?.status === 422) {
+        const errorData = error.response.data;
+        
+        // Handle different error response formats
+        if (errorData?.detail) {
+          // If detail is an array of validation errors (common in FastAPI)
+          if (Array.isArray(errorData.detail)) {
+            errorMessage = errorData.detail
+              .map((err: any) => {
+                if (err.msg && err.loc) {
+                  return `${err.loc.join(".")}: ${err.msg}`;
+                }
+                return err.msg || JSON.stringify(err);
+              })
+              .join("\n");
+          } else if (typeof errorData.detail === "string") {
+            errorMessage = errorData.detail;
+          } else {
+            errorMessage = JSON.stringify(errorData.detail);
+          }
+        } else if (errorData?.errors) {
+          // Handle errors object format
+          errorMessage = JSON.stringify(errorData.errors);
+        } else if (errorData?.message) {
+          errorMessage = errorData.message;
+        } else {
+          errorMessage = JSON.stringify(errorData);
+        }
+      } else if (error?.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert("Registration Failed", errorMessage);
+    },
+  });
+
   const handleSignup = () => {
     if (!userType) {
       Alert.alert("Select Account Type", "Please select Salon or Customer");
+      return;
+    }
+
+    if (!name.trim()) {
+      Alert.alert("Error", "Please enter your name");
       return;
     }
 
@@ -38,19 +103,23 @@ export default function Signup() {
       return;
     }
 
-    console.log("Signup Data:", {
-      userType,
-      email,
-      phone,
-      password,
-    });
+    if (password.length < 6) {
+      Alert.alert("Error", "Password must be at least 6 characters");
+      return;
+    }
 
-    // Call Signup API → Send OTP
-    setStep("otp");
+    // Call Signup API
+    registerMutation.mutate({
+      name: name.trim(),
+      email: email.trim(),
+      password,
+      phone: phone.trim(),
+      role: userType,
+    });
   };
 
   const handleVerifyOtp = () => {
-    console.log("OTP Verify:", {
+    logger.log("OTP Verify:", {
       email,
       otp,
       userType,
@@ -65,13 +134,13 @@ export default function Signup() {
       {step === "signup" && (
         <View style={styles.tabContainer}>
           <TouchableOpacity
-            style={[styles.tab, userType === "salon" && styles.activeTab]}
-            onPress={() => setUserType("salon")}
+            style={[styles.tab, userType === "salon_admin" && styles.activeTab]}
+            onPress={() => setUserType("salon_admin")}
           >
             <Text
               style={[
                 styles.tabText,
-                userType === "salon" && styles.activeTabText,
+                userType === "salon_admin" && styles.activeTabText,
               ]}
             >
               Salon
@@ -100,6 +169,16 @@ export default function Signup() {
 
       {step === "signup" ? (
         <>
+          <View style={styles.inputContainer}>
+            <Ionicons name="person-outline" size={20} color="#666" />
+            <TextInput
+              style={styles.input}
+              placeholder="Full Name"
+              autoCapitalize="words"
+              value={name}
+              onChangeText={setName}
+            />
+          </View>
           {/* Email */}
           <View style={styles.inputContainer}>
             <Ionicons name="mail-outline" size={20} color="#666" />
@@ -168,10 +247,20 @@ export default function Signup() {
           </View>
 
           {/* Signup Button */}
-          <TouchableOpacity style={styles.button} onPress={handleSignup}>
-            <Text style={styles.buttonText}>Sign Up</Text>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              registerMutation.isPending && styles.buttonDisabled,
+            ]}
+            onPress={handleSignup}
+            disabled={registerMutation.isPending}
+          >
+            {registerMutation.isPending ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={styles.buttonText}>Sign Up</Text>
+            )}
           </TouchableOpacity>
-
           {/* Login Link */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Already have an account?</Text>
@@ -204,6 +293,9 @@ export default function Signup() {
 }
 
 const styles = StyleSheet.create({
+  buttonDisabled: {
+    opacity: 0.6,
+  },
   tabContainer: {
     flexDirection: "row",
     backgroundColor: "#F2F2F2",

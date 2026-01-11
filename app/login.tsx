@@ -1,4 +1,8 @@
+import { loginUser } from "@/actions/api";
+import { LoginRequest, UserType } from "@/types";
+import logger from "@/utils/logger";
 import { Ionicons } from "@expo/vector-icons";
+import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -10,8 +14,6 @@ import {
   View,
 } from "react-native";
 
-type UserType = "salon" | "customer" | null;
-
 export default function Login() {
   const router = useRouter();
 
@@ -20,18 +22,81 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [secureText, setSecureText] = useState(true);
 
+  // Registration mutation
+  const logMutation = useMutation({
+    mutationFn: (data: LoginRequest) => loginUser(data),
+    onSuccess: (data) => {
+      logger.log("Login successful:", data);
+      // Move to OTP step on success
+      // setStep("otp");
+      Alert.alert("Login successful", "You are logged in successfully");
+      if (userType === "salon_admin") {
+        router.push("/admin/profile");
+      } else {
+        router.push("/(customer)/customer");
+      }
+      // router.push("/login")
+    },
+    onError: (error: any) => {
+      logger.log("Registration error:", JSON.stringify(error, null, 2));
+      logger.log("Error response:", error?.response?.data);
+
+      // Handle 422 validation errors with detailed messages
+      let errorMessage = "Registration failed. Please try again.";
+
+      if (error?.response?.status === 422) {
+        const errorData = error.response.data;
+
+        // Handle different error response formats
+        if (errorData?.detail) {
+          // If detail is an array of validation errors (common in FastAPI)
+          if (Array.isArray(errorData.detail)) {
+            errorMessage = errorData.detail
+              .map((err: any) => {
+                if (err.msg && err.loc) {
+                  return `${err.loc.join(".")}: ${err.msg}`;
+                }
+                return err.msg || JSON.stringify(err);
+              })
+              .join("\n");
+          } else if (typeof errorData.detail === "string") {
+            errorMessage = errorData.detail;
+          } else {
+            errorMessage = JSON.stringify(errorData.detail);
+          }
+        } else if (errorData?.errors) {
+          // Handle errors object format
+          errorMessage = JSON.stringify(errorData.errors);
+        } else if (errorData?.message) {
+          errorMessage = errorData.message;
+        } else {
+          errorMessage = JSON.stringify(errorData);
+        }
+      } else if (error?.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      Alert.alert("Registration Failed", errorMessage);
+    },
+  });
   const handleLogin = () => {
     if (!userType) {
       Alert.alert("Select Account Type", "Please select Salon or Customer");
       return;
     }
 
-    console.log("Login Data:", {
+    logger.log("Login Data:", {
       userType,
       email,
       password,
     });
-
+    logMutation.mutate({
+      email,
+      password,
+      userType,
+    });
     // Call Login API here
   };
 
@@ -40,13 +105,13 @@ export default function Login() {
       {/* Tabs */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
-          style={[styles.tab, userType === "salon" && styles.activeTab]}
-          onPress={() => setUserType("salon")}
+          style={[styles.tab, userType === "salon_admin" && styles.activeTab]}
+          onPress={() => setUserType("salon_admin")}
         >
           <Text
             style={[
               styles.tabText,
-              userType === "salon" && styles.activeTabText,
+              userType === "salon_admin" && styles.activeTabText,
             ]}
           >
             Salon
@@ -101,13 +166,15 @@ export default function Login() {
 
       {/* Login Button */}
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+        <Text style={styles.buttonText}>
+          {logMutation.isPending ? "Logging in..." : "Login"}
+        </Text>
       </TouchableOpacity>
 
       {/* Signup Link */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>Don’t have an account?</Text>
-        <TouchableOpacity onPress={() => router.push("/admin/profile")}>
+        <TouchableOpacity onPress={() => router.push("/signup")}>
           <Text style={styles.signupText}> Sign up</Text>
         </TouchableOpacity>
       </View>
