@@ -23,10 +23,10 @@ export default function Signup() {
 
   const [name, setName] = useState("Aina"); // Add name field
 
-  const [email, setEmail] = useState("aina@gmail.com");
-  const [phone, setPhone] = useState("03001234567");
-  const [password, setPassword] = useState("12345689");
-  const [confirmPassword, setConfirmPassword] = useState("12345689");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [otp, setOtp] = useState("");
 
   const [securePassword, setSecurePassword] = useState(true);
@@ -39,19 +39,18 @@ export default function Signup() {
       logger.log("Registration successful:", data);
       // Move to OTP step on success
       // setStep("otp");
-      router.push("/login")
-      
+      router.push("/login");
     },
     onError: (error: any) => {
       logger.log("Registration error:", JSON.stringify(error, null, 2));
       logger.log("Error response:", error?.response?.data);
-      
+
       // Handle 422 validation errors with detailed messages
       let errorMessage = "Registration failed. Please try again.";
-      
+
       if (error?.response?.status === 422) {
         const errorData = error.response.data;
-        
+
         // Handle different error response formats
         if (errorData?.detail) {
           // If detail is an array of validation errors (common in FastAPI)
@@ -82,7 +81,7 @@ export default function Signup() {
       } else if (error?.message) {
         errorMessage = error.message;
       }
-      
+
       Alert.alert("Registration Failed", errorMessage);
     },
   });

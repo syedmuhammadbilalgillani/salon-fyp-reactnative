@@ -39,11 +39,11 @@ export default function Login() {
 
   const [userType, setUserType] = useState<UserType>(null);
   const [email, setEmail] = useState("");
-  useEffect(() => {
-    userType === "customer"
-      ? setEmail("bilal@gmail.com")
-      : setEmail("bilal1@gmail.com");
-  }, [userType]);
+  // useEffect(() => {
+  //   userType === "customer"
+  //     ? setEmail("bilal@gmail.com")
+  //     : setEmail("bilal1@gmail.com");
+  // }, [userType]);
 
   const [password, setPassword] = useState("12345678");
   const [secureText, setSecureText] = useState(true);
