@@ -6,7 +6,7 @@ import logger from "@/utils/logger";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   StyleSheet,
@@ -18,10 +18,34 @@ import {
 
 export default function Login() {
   const router = useRouter();
+  const { getUser, isAuthenticated } = useAuthStore();
+  const user = getUser();
+
+  logger.log("+================");
+  logger.log(isAuthenticated, user);
+  logger.log("+================");
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (user?.role === "salon_admin") {
+        logger.log("Admin User Logged In");
+        router.push("/admin/profile");
+      } else {
+        logger.log("Customer User Logged In");
+        router.push("/customer/home");
+      }
+    }
+  }, [isAuthenticated, user]);
 
   const [userType, setUserType] = useState<UserType>(null);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  useEffect(() => {
+    userType === "customer"
+      ? setEmail("bilal@gmail.com")
+      : setEmail("bilal1@gmail.com");
+  }, [userType]);
+
+  const [password, setPassword] = useState("12345678");
   const [secureText, setSecureText] = useState(true);
 
   // Registration mutation
@@ -39,7 +63,7 @@ export default function Login() {
       if (userType === "salon_admin") {
         router.push("/admin/profile");
       } else {
-        router.push("/(customer)/customer");
+        router.push("/customer/home");
       }
       // router.push("/login")
     },

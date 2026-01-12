@@ -64,6 +64,18 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen
+        name="salon"
+        options={{
+          title: "Salon",
+          tabBarLabel: "Salon",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="storefront-outline" size={size} color={color} />
+          ),
+          headerTitle: "Admin Salon",
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
@@ -72,18 +84,6 @@ export default function AdminLayout() {
             <Ionicons name="person-outline" size={size} color={color} />
           ),
           headerTitle: "Admin Profile",
-          headerShown: false,
-        }}
-      />
-      <Tabs.Screen
-        name="salon"
-        options={{
-          title: "Salon",
-          tabBarLabel: "Salon",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
-          ),
-          headerTitle: "Admin Salon",
           headerShown: false,
         }}
       />
