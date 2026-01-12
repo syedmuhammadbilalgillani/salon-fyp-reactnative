@@ -45,7 +45,7 @@ export default function Login() {
   //     : setEmail("bilal1@gmail.com");
   // }, [userType]);
 
-  const [password, setPassword] = useState("12345678");
+  const [password, setPassword] = useState("");
   const [secureText, setSecureText] = useState(true);
 
   // Registration mutation

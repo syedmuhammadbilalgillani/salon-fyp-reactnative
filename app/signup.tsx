@@ -21,7 +21,7 @@ export default function Signup() {
   const [step, setStep] = useState<"signup" | "otp">("signup");
   const [userType, setUserType] = useState<UserType>(null);
 
-  const [name, setName] = useState("Aina"); // Add name field
+  const [name, setName] = useState(""); // Add name field
 
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
