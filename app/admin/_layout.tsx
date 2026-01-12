@@ -36,6 +36,7 @@ export default function AdminLayout() {
             <Ionicons name="people-outline" size={size} color={color} />
           ),
           headerTitle: "User Management",
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -47,6 +48,7 @@ export default function AdminLayout() {
             <Ionicons name="calendar-outline" size={size} color={color} />
           ),
           headerTitle: "Recent Bookings",
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -58,6 +60,7 @@ export default function AdminLayout() {
             <Ionicons name="chatbubbles-outline" size={size} color={color} />
           ),
           headerTitle: "Customer Inquiries",
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -69,6 +72,7 @@ export default function AdminLayout() {
             <Ionicons name="person-outline" size={size} color={color} />
           ),
           headerTitle: "Admin Profile",
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -80,6 +84,7 @@ export default function AdminLayout() {
             <Ionicons name="person-outline" size={size} color={color} />
           ),
           headerTitle: "Admin Salon",
+          headerShown: false,
         }}
       />
     </Tabs>

@@ -1,11 +1,11 @@
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-    ImageBackground,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function HomePage() {

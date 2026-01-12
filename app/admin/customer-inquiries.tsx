@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function CustomerInquiries() {
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView  style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>Customer Inquiries</Text>
         <Text style={styles.subtitle}>Manage customer questions and support requests</Text>

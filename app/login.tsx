@@ -1,4 +1,6 @@
 import { loginUser } from "@/actions/api";
+import { initAxiosApi } from "@/services/axios";
+import { useAuthStore } from "@/store/authStore";
 import { LoginRequest, UserType } from "@/types";
 import logger from "@/utils/logger";
 import { Ionicons } from "@expo/vector-icons";
@@ -25,10 +27,14 @@ export default function Login() {
   // Registration mutation
   const logMutation = useMutation({
     mutationFn: (data: LoginRequest) => loginUser(data),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       logger.log("Login successful:", data);
       // Move to OTP step on success
+      await initAxiosApi({ isLoggedIn: true, token: data?.access_token });
       // setStep("otp");
+      useAuthStore.getState().login(data?.access_token);
+      useAuthStore.getState().setUser(data?.user);
+
       Alert.alert("Login successful", "You are logged in successfully");
       if (userType === "salon_admin") {
         router.push("/admin/profile");
@@ -50,8 +56,8 @@ export default function Login() {
         // Handle different error response formats
         if (errorData?.detail) {
           // If detail is an array of validation errors (common in FastAPI)
-          if (Array.isArray(errorData.detail)) {
-            errorMessage = errorData.detail
+          if (Array.isArray(errorData?.detail)) {
+            errorMessage = errorData?.detail
               .map((err: any) => {
                 if (err.msg && err.loc) {
                   return `${err.loc.join(".")}: ${err.msg}`;
@@ -59,21 +65,21 @@ export default function Login() {
                 return err.msg || JSON.stringify(err);
               })
               .join("\n");
-          } else if (typeof errorData.detail === "string") {
-            errorMessage = errorData.detail;
+          } else if (typeof errorData?.detail === "string") {
+            errorMessage = errorData?.detail;
           } else {
-            errorMessage = JSON.stringify(errorData.detail);
+            errorMessage = JSON.stringify(errorData?.detail);
           }
         } else if (errorData?.errors) {
           // Handle errors object format
-          errorMessage = JSON.stringify(errorData.errors);
+          errorMessage = JSON.stringify(errorData?.errors);
         } else if (errorData?.message) {
-          errorMessage = errorData.message;
+          errorMessage = errorData?.message;
         } else {
           errorMessage = JSON.stringify(errorData);
         }
       } else if (error?.response?.data?.detail) {
-        errorMessage = error.response.data.detail;
+        errorMessage = error.response.data?.detail;
       } else if (error?.message) {
         errorMessage = error.message;
       }

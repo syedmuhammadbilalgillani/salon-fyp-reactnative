@@ -21,12 +21,12 @@ export default function Signup() {
   const [step, setStep] = useState<"signup" | "otp">("signup");
   const [userType, setUserType] = useState<UserType>(null);
 
-  const [name, setName] = useState("Bilal"); // Add name field
+  const [name, setName] = useState("Aina"); // Add name field
 
-  const [email, setEmail] = useState("bilal@gmail.com");
+  const [email, setEmail] = useState("aina@gmail.com");
   const [phone, setPhone] = useState("03001234567");
-  const [password, setPassword] = useState("123456");
-  const [confirmPassword, setConfirmPassword] = useState("123456");
+  const [password, setPassword] = useState("12345689");
+  const [confirmPassword, setConfirmPassword] = useState("12345689");
   const [otp, setOtp] = useState("");
 
   const [securePassword, setSecurePassword] = useState(true);
